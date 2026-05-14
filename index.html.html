@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greener Edge — Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --teal: #00544F;
+    --teal-dark: #003d39;
+    --teal-light: #e8f2f1;
+    --teal-mid: #0a6b65;
+    --lime: #85BE00;
+    --lime-light: #f0f7d9;
+    --lime-dark: #6a9800;
+    --white: #ffffff;
+    --off-white: #f7f8f6;
+    --border: #e0e6e5;
+    --border-mid: #c8d4d3;
+    --text-primary: #1a2e2d;
+    --text-secondary: #4a6360;
+    --text-muted: #7a9896;
+    --red: #c0392b;
+    --red-light: #fdf0ee;
+    --amber: #d68910;
+    --amber-light: #fef9ec;
+    --radius: 10px;
+    --radius-lg: 16px;
+    --shadow: 0 1px 3px rgba(0,84,79,0.08), 0 4px 12px rgba(0,84,79,0.06);
+    --shadow-sm: 0 1px 2px rgba(0,84,79,0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--off-white);
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Sidebar layout ── */
+  .app-layout {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    width: 240px;
+    background: var(--teal);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+  }
+
+  .sidebar-logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .logo-mark {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+
+  .leaf-svg { width: 32px; height: 32px; flex-shrink: 0; }
+
+  .logo-text-block { display: flex; flex-direction: column; }
+
+  .logo-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    color: white;
+    line-height: 1.1;
+    letter-spacing: -0.2px;
+  }
+
+  .logo-sub {
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--lime);
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  .internal-badge {
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.5px;
+  }
+
+  .internal-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--lime);
+    flex-shrink: 0;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .nav-section-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    padding: 8px 8px 4px;
+    margin-top: 8px;
+  }
+
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    border: none;
+    background: none;
+    color: rgba(255,255,255,0.65);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 400;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    transition: all 0.15s;
+  }
+
+  .nav-btn:hover { background: rgba(255,255,255,0.08); color: white; }
+
+  .nav-btn.active {
+    background: rgba(133,190,0,0.2);
+    color: white;
+    font-weight: 500;
+  }
+
+  .nav-btn.active .nav-icon { color: var(--lime); }
+
+  .nav-icon {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    line-height: 1.5;
+  }
+
+  /* ── Main content ── */
+  .main-content {
+    margin-left: 240px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .topbar-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .topbar-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  .topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+  .data-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 6px 12px;
+    background: var(--off-white);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--border-mid);
+    flex-shrink: 0;
+  }
+
+  .status-dot.loaded { background: var(--lime); }
+
+  .btn-primary {
+    background: var(--teal);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s;
+  }
+
+  .btn-primary:hover { background: var(--teal-dark); }
+
+  .btn-secondary {
+    background: white;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+  }
+
+  .btn-secondary:hover { border-color: var(--teal); color: var(--teal); }
+
+  /* ── Page panels ── */
+  .panel { display: none; padding: 28px; }
+  .panel.active { display: block; }
+
+  /* ── Metrics ── */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .metric-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .metric-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--teal-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+    margin-bottom: 12px;
+  }
+
+  .metric-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
+  }
+
+  .metric-value {
+    font-size: 26px;
+    font-weight: 300;
+    color: var(--teal);
+    letter-spacing: -0.5px;
+    font-family: 'DM Serif Display', serif;
+  }
+
+  .metric-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* ── Charts ── */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .chart-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .chart-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .chart-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  .chart-count {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ── Upload zone ── */
+  .upload-zone {
+    background: white;
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-lg);
+    padding: 48px 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 24px;
+  }
+
+  .upload-zone:hover { border-color: var(--teal); background: var(--teal-light); }
+
+  .upload-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+    opacity: 0.4;
+  }
+
+  .upload-zone h3 { font-size: 15px; font-weight: 500; color: var(--text-primary); margin-bottom: 6px; }
+  .upload-zone p { font-size: 13px; color: var(--text-muted); }
+
+  /* ── Knowledge base ── */
+  .kb-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 20px;
+    height: calc(100vh - 130px);
+    min-height: 500px;
+  }
+
+  .chat-panel {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+
+  .chat-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .chat-header-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--teal-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  .chat-header-text h3 { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+  .chat-header-text p { font-size: 11px; color: var(--text-muted); }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .chat-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 10px;
+    color: var(--text-muted);
+  }
+
+  .chat-empty-icon { font-size: 32px; opacity: 0.3; }
+  .chat-empty h3 { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
+  .chat-empty p { font-size: 12px; }
+
+  .msg { display: flex; flex-direction: column; gap: 3px; }
+
+  .msg.user { align-items: flex-end; }
+  .msg.assistant { align-items: flex-start; }
+
+  .msg-bubble {
+    max-width: 85%;
+    padding: 11px 15px;
+    border-radius: 14px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .msg.user .msg-bubble {
+    background: var(--teal);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+
+  .msg.assistant .msg-bubble {
+    background: var(--off-white);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 4px;
+  }
+
+  .msg.assistant .msg-bubble.loading {
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .msg-time {
+    font-size: 10px;
+    color: var(--text-muted);
+    padding: 0 4px;
+  }
+
+  .chat-input-area {
+    padding: 14px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--off-white);
+  }
+
+  .chat-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+  }
+
+  textarea#kb-question {
+    flex: 1;
+    min-height: 44px;
+    max-height: 120px;
+    resize: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: white;
+    color: var(--text-primary);
+    outline: none;
+    transition: border 0.15s;
+    line-height: 1.5;
+  }
+
+  textarea#kb-question:focus { border-color: var(--teal); }
+  textarea#kb-question::placeholder { color: var(--text-muted); }
+
+  .send-btn {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: var(--teal);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+
+  .send-btn:hover { background: var(--teal-dark); }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .input-hint {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    text-align: right;
+  }
+
+  /* ── Sidebar right panel (KB) ── */
+  .kb-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    overflow-y: auto;
+  }
+
+  .kb-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .kb-card-title {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+
+  .suggestion-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .suggestion-btn {
+    background: var(--off-white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    text-align: left;
+    line-height: 1.4;
+    transition: all 0.15s;
+  }
+
+  .suggestion-btn:hover {
+    border-color: var(--teal);
+    color: var(--teal);
+    background: var(--teal-light);
+  }
+
+  .file-load-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .file-input-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    background: var(--teal-light);
+    border: 1px solid var(--teal);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--teal);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    justify-content: center;
+  }
+
+  .file-input-label:hover { background: var(--teal); color: white; }
+
+  input[type="file"] { display: none; }
+
+  .data-info {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .data-info.loaded { color: var(--teal); font-weight: 500; }
+
+  /* ── Reports page ── */
+  .reports-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  .search-box input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text-primary);
+    background: none;
+  }
+
+  .search-box input::placeholder { color: var(--text-muted); }
+
+  select.filter-select {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    outline: none;
+  }
+
+  .table-wrap {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead { background: var(--teal); }
+
+  thead th {
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.8);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--off-white); }
+
+  td {
+    padding: 11px 14px;
+    color: var(--text-primary);
+    vertical-align: top;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  td.wrap { white-space: normal; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .badge-teal { background: var(--teal-light); color: var(--teal); }
+  .badge-lime { background: var(--lime-light); color: var(--lime-dark); }
+  .badge-red { background: var(--red-light); color: var(--red); }
+  .badge-amber { background: var(--amber-light); color: var(--amber); }
+  .badge-gray { background: #f1f0ee; color: #666; }
+
+  .table-footer {
+    padding: 10px 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    background: var(--off-white);
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+  /* ── Utility ── */
+  .hidden { display: none !important; }
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .gap-2 { gap: 8px; }
+
+  .section-title {
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--text-primary);
+    font-family: 'DM Serif Display', serif;
+    margin-bottom: 4px;
+  }
+
+  .section-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 22px;
+  }
+
+  .no-data-msg {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  @media (max-width: 900px) {
+    .sidebar { width: 200px; }
+    .main-content { margin-left: 200px; }
+    .metric-grid { grid-template-columns: repeat(2, 1fr); }
+    .chart-grid { grid-template-columns: 1fr; }
+    .kb-layout { grid-template-columns: 1fr; }
+    .kb-sidebar { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar" role="navigation" aria-label="Main navigation">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <svg class="leaf-svg" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M50 5 C20 5, 5 30, 5 60 C5 90, 25 115, 50 115 C75 115, 95 90, 95 60 C95 30, 80 5, 50 5Z" fill="#85BE00" opacity="0.9"/>
+          <path d="M50 115 L50 30" stroke="rgba(0,84,79,0.6)" stroke-width="4" stroke-linecap="round"/>
+          <path d="M50 70 L30 50" stroke="rgba(0,84,79,0.6)" stroke-width="3" stroke-linecap="round"/>
+          <path d="M50 85 L72 62" stroke="rgba(0,84,79,0.6)" stroke-width="3" stroke-linecap="round"/>
+          <path d="M50 55 L33 40" stroke="rgba(0,84,79,0.6)" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <div class="logo-text-block">
+          <span class="logo-name">Greener Edge</span>
+          <span class="logo-sub">Sustainability</span>
+        </div>
+      </div>
+      <div class="internal-badge">Internal use only</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Analytics</div>
+      <button class="nav-btn active" onclick="showPanel('dashboard', this)" aria-current="page">
+        <span class="nav-icon">◫</span> Dashboard
+      </button>
+      <button class="nav-btn" onclick="showPanel('clients', this)">
+        <span class="nav-icon">≡</span> Client database
+      </button>
+
+      <div class="nav-section-label">Intelligence</div>
+      <button class="nav-btn" onclick="showPanel('kb', this)">
+        <span class="nav-icon">◎</span> Knowledge base
+      </button>
+
+      <div class="nav-section-label">Data</div>
+      <button class="nav-btn" onclick="showPanel('upload', this)">
+        <span class="nav-icon">↑</span> Load data
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      Data &amp; Carbon Solutions team<br>
+      Greener Edge Sustainability
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main class="main-content">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-sub" id="topbar-sub">Project intelligence overview</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="data-status">
+          <div class="status-dot" id="status-dot"></div>
+          <span id="status-text">No data loaded</span>
+        </div>
+        <label class="btn-primary" style="cursor:pointer;">
+          <input type="file" id="main-file-input" accept=".xlsx" onchange="loadData(this)">
+          ↑ Load Excel
+        </label>
+      </div>
+    </div>
+
+    <!-- ── Dashboard panel ── -->
+    <div id="panel-dashboard" class="panel active">
+      <div class="section-title">Project intelligence</div>
+      <div class="section-sub">Overview of all Greener Edge clients, programmes, and emissions data</div>
+
+      <div id="dash-no-data" class="upload-zone" onclick="document.getElementById('main-file-input').click()">
+        <div class="upload-icon">⬆</div>
+        <h3>Load your BD Engagement Output.xlsx to begin</h3>
+        <p>Click here or use the button above. Data stays in your browser — nothing is uploaded externally.</p>
+      </div>
+
+      <div id="dash-content" class="hidden">
+        <div class="metric-grid" id="metric-grid"></div>
+        <div class="chart-grid">
+          <div class="chart-card">
+            <div class="chart-header">
+              <span class="chart-title">Clients by sector</span>
+            </div>
+            <div id="leg-sector" class="legend"></div>
+            <div style="position:relative;height:230px;">
+              <canvas id="ch-sector" role="img" aria-label="Clients by sector bar chart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <span class="chart-title">Business type breakdown</span>
+            </div>
+            <div id="leg-type" class="legend"></div>
+            <div style="position:relative;height:230px;">
+              <canvas id="ch-type" role="img" aria-label="Business type doughnut chart"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="chart-grid">
+          <div class="chart-card">
+            <div class="chart-header">
+              <span class="chart-title">Average emissions by sector (tCO2e)</span>
+              <span class="chart-count" id="ch-emiss-count"></span>
+            </div>
+            <div style="position:relative;height:230px;">
+              <canvas id="ch-emissions" role="img" aria-label="Average emissions by sector"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <span class="chart-title">Clients by programme</span>
+            </div>
+            <div style="position:relative;height:230px;">
+              <canvas id="ch-prog" role="img" aria-label="Clients by programme bar chart"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="chart-grid">
+          <div class="chart-card">
+            <div class="chart-header">
+              <span class="chart-title">Report categories</span>
+            </div>
+            <div id="leg-cat" class="legend"></div>
+            <div style="position:relative;height:180px;">
+              <canvas id="ch-cat" role="img" aria-label="Report categories bar chart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <span class="chart-title">Country distribution</span>
+            </div>
+            <div id="leg-country" class="legend"></div>
+            <div style="position:relative;height:180px;">
+              <canvas id="ch-country" role="img" aria-label="Country distribution chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Clients panel ── -->
+    <div id="panel-clients" class="panel">
+      <div class="section-title">Client database</div>
+      <div class="section-sub">Browse, search, and filter all project records</div>
+
+      <div class="reports-controls">
+        <div class="search-box">
+          <span style="color:var(--text-muted);font-size:16px;">⌕</span>
+          <input type="text" id="search-input" placeholder="Search clients, locations, emails..." oninput="filterTable()">
+        </div>
+        <select class="filter-select" id="filter-sector" onchange="filterTable()">
+          <option value="">All sectors</option>
+        </select>
+        <select class="filter-select" id="filter-prog" onchange="filterTable()">
+          <option value="">All programmes</option>
+        </select>
+        <select class="filter-select" id="filter-type" onchange="filterTable()">
+          <option value="">All business types</option>
+        </select>
+      </div>
+
+      <div id="clients-no-data" class="no-data-msg">Load your Excel file to view the client database.</div>
+
+      <div id="clients-table-wrap" class="table-wrap hidden">
+        <table>
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Sector</th>
+              <th>Type</th>
+              <th>Country</th>
+              <th>Programme</th>
+              <th>Report</th>
+              <th>Total tCO2e</th>
+              <th>Contact email</th>
+              <th>Email type</th>
+            </tr>
+          </thead>
+          <tbody id="clients-tbody"></tbody>
+        </table>
+        <div class="table-footer" id="table-footer"></div>
+      </div>
+    </div>
+
+    <!-- ── Knowledge base panel ── -->
+    <div id="panel-kb" class="panel">
+      <div class="section-title">Knowledge base</div>
+      <div class="section-sub">Ask questions about your projects, clients, sectors, and findings</div>
+
+      <div class="kb-layout">
+        <div class="chat-panel">
+          <div class="chat-header">
+            <div class="chat-header-icon">◎</div>
+            <div class="chat-header-text">
+              <h3>Project intelligence assistant</h3>
+              <p id="kb-header-status">Load your data file to begin</p>
+            </div>
+          </div>
+
+          <div class="chat-messages" id="chat-messages">
+            <div class="chat-empty" id="chat-empty">
+              <div class="chat-empty-icon">◎</div>
+              <h3>Ready to answer questions</h3>
+              <p>Load your Excel file and ask anything about<br>your clients, projects, sectors, or findings.</p>
+            </div>
+          </div>
+
+          <div class="chat-input-area">
+            <div class="chat-input-row">
+              <textarea id="kb-question" rows="1" placeholder="Ask about clients, sectors, emissions, recommendations..." onkeydown="handleKbKey(event)"></textarea>
+              <button class="send-btn" id="send-btn" onclick="sendQuestion()" aria-label="Send question">→</button>
+            </div>
+            <div class="input-hint">Enter to send · Shift+Enter for new line · Uses Anthropic API</div>
+          </div>
+        </div>
+
+        <div class="kb-sidebar">
+          <div class="kb-card">
+            <div class="kb-card-title">Data source</div>
+            <div class="file-load-row">
+              <label class="file-input-label">
+                <input type="file" id="kb-file-input" accept=".xlsx" onchange="loadKbData(this)">
+                ↑ Load Excel file
+              </label>
+              <div class="data-info" id="kb-data-info">No data loaded</div>
+            </div>
+          </div>
+
+          <div class="kb-card">
+            <div class="kb-card-title">Report text (optional)</div>
+            <div class="file-load-row">
+              <label class="file-input-label">
+                <input type="file" id="report-json-input" accept=".json" onchange="loadReportText(this)">
+                ↑ Load reports.json
+              </label>
+              <div class="data-info" id="report-text-info">Enables full report analysis</div>
+            </div>
+          </div>
+
+          <div class="kb-card">
+            <div class="kb-card-title">Suggested questions</div>
+            <div class="suggestion-list">
+              <button class="suggestion-btn" onclick="useSuggestion(this)">What is the average emissions for hospitality and tourism clients?</button>
+              <button class="suggestion-btn" onclick="useSuggestion(this)">Which clients are missing contact details?</button>
+              <button class="suggestion-btn" onclick="useSuggestion(this)">Give me a summary of findings from the community and third sector.</button>
+              <button class="suggestion-btn" onclick="useSuggestion(this)">Which clients in Gwynedd or Anglesey have we worked with?</button>
+              <button class="suggestion-btn" onclick="useSuggestion(this)">What are our highest emission clients and what sectors are they in?</button>
+              <button class="suggestion-btn" onclick="useSuggestion(this)">What typical recommendations have we made for hospitality clients?</button>
+              <button class="suggestion-btn" onclick="useSuggestion(this)">Have we worked with any food and drink clients with Scope 3 over 100 tCO2e?</button>
+              <button class="suggestion-btn" onclick="useSuggestion(this)">Draw useful findings from our work across all programmes.</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Upload panel ── -->
+    <div id="panel-upload" class="panel">
+      <div class="section-title">Load data</div>
+      <div class="section-sub">Instructions for loading your project data into the platform</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:800px;">
+
+        <div class="chart-card">
+          <div class="chart-title" style="margin-bottom:12px;">Step 1: Load Excel database</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;line-height:1.6;">Load your <code style="background:var(--off-white);padding:2px 6px;border-radius:4px;font-size:12px;">BD Engagement Output.xlsx</code> file generated by the extraction script. This powers the dashboard and client database.</p>
+          <label class="btn-primary" style="cursor:pointer;display:inline-flex;">
+            <input type="file" id="upload-panel-xlsx" accept=".xlsx" onchange="loadData(this)">
+            ↑ Load Excel file
+          </label>
+          <div style="margin-top:10px;font-size:12px;color:var(--text-muted);" id="upload-xlsx-status">No file loaded</div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title" style="margin-bottom:12px;">Step 2: Load report text (optional)</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;line-height:1.6;">Load your <code style="background:var(--off-white);padding:2px 6px;border-radius:4px;font-size:12px;">reports.json</code> file generated by the text indexer script. Enables the knowledge base to answer questions about report content and recommendations.</p>
+          <label class="btn-primary" style="cursor:pointer;display:inline-flex;">
+            <input type="file" id="upload-panel-json" accept=".json" onchange="loadReportText(this)">
+            ↑ Load reports.json
+          </label>
+          <div style="margin-top:10px;font-size:12px;color:var(--text-muted);" id="upload-json-status">No file loaded</div>
+        </div>
+
+        <div class="chart-card" style="grid-column:1/-1;">
+          <div class="chart-title" style="margin-bottom:12px;">Generating reports.json</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;line-height:1.6;">Run the following command in your GE_Extractor folder to generate the report text index:</p>
+          <code style="display:block;background:var(--teal);color:#85BE00;padding:12px 16px;border-radius:8px;font-size:13px;letter-spacing:0.3px;">python index_reports.py</code>
+          <p style="font-size:12px;color:var(--text-muted);margin-top:10px;">This reads all PDFs and Word docs and produces a <code style="font-size:11px;background:var(--off-white);padding:1px 5px;border-radius:3px;">reports.json</code> file you can load here. Run it whenever you add new reports.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+let allData = [];
+let filteredData = [];
+let kbData = [];
+let reportTexts = {};
+let chatHistory = [];
+let chartInstances = {};
+let msgCounter = 0;
+
+const TEAL = '#00544F';
+const LIME = '#85BE00';
+const PALETTE = ['#00544F','#85BE00','#1D9E75','#378ADD','#BA7517','#D85A30','#7F77DD','#D4537E','#639922','#888780','#5DCAA5','#E24B4A'];
+
+function showPanel(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  if (btn) { btn.classList.add('active'); btn.setAttribute('aria-current','page'); }
+  const titles = { dashboard:'Dashboard', clients:'Client database', kb:'Knowledge base', upload:'Load data' };
+  const subs = { dashboard:'Project intelligence overview', clients:'Browse all project records', kb:'Ask questions about your work', upload:'Load your data files' };
+  document.getElementById('topbar-title').textContent = titles[name] || name;
+  document.getElementById('topbar-sub').textContent = subs[name] || '';
+}
+
+function loadData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const wb = XLSX.read(e.target.result, { type: 'array' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    allData = XLSX.utils.sheet_to_json(ws, { defval: '' });
+    kbData = allData;
+    filteredData = allData;
+    updateStatusBar(allData.length);
+    renderDashboard();
+    renderClientTable(allData);
+    populateFilters();
+    document.getElementById('dash-no-data').classList.add('hidden');
+    document.getElementById('dash-content').classList.remove('hidden');
+    document.getElementById('clients-no-data').classList.add('hidden');
+    document.getElementById('clients-table-wrap').classList.remove('hidden');
+    document.getElementById('upload-xlsx-status').textContent = file.name + ' loaded (' + allData.length + ' records)';
+    document.getElementById('upload-xlsx-status').style.color = TEAL;
+    document.getElementById('kb-data-info').textContent = allData.length + ' clients loaded';
+    document.getElementById('kb-data-info').className = 'data-info loaded';
+    document.getElementById('kb-header-status').textContent = allData.length + ' clients loaded · Ready';
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function loadKbData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const wb = XLSX.read(e.target.result, { type: 'array' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    kbData = XLSX.utils.sheet_to_json(ws, { defval: '' });
+    document.getElementById('kb-data-info').textContent = kbData.length + ' clients loaded';
+    document.getElementById('kb-data-info').className = 'data-info loaded';
+    document.getElementById('kb-header-status').textContent = kbData.length + ' clients loaded · Ready';
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function loadReportText(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      reportTexts = JSON.parse(e.target.result);
+      const count = Object.keys(reportTexts).length;
+      document.getElementById('report-text-info').textContent = count + ' reports indexed';
+      document.getElementById('report-text-info').className = 'data-info loaded';
+      document.getElementById('upload-json-status').textContent = file.name + ' loaded (' + count + ' reports)';
+      document.getElementById('upload-json-status').style.color = TEAL;
+    } catch(err) {
+      document.getElementById('report-text-info').textContent = 'Error reading file';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function updateStatusBar(count) {
+  document.getElementById('status-dot').className = 'status-dot loaded';
+  document.getElementById('status-text').textContent = count + ' clients loaded';
+}
+
+function getCol(row, ...names) {
+  for (const n of names) if (row[n] !== undefined && row[n] !== '') return row[n];
+  return '';
+}
+
+function renderDashboard() {
+  const data = allData;
+  const withEmissions = data.filter(r => parseFloat(getCol(r,'Total Emissions (tCO2e)')) > 0);
+  const totalCo2 = withEmissions.reduce((s,r) => s + parseFloat(getCol(r,'Total Emissions (tCO2e)')), 0);
+  const progs = new Set(data.map(r => getCol(r,'Programme')).filter(Boolean)).size;
+  const personalEmails = data.filter(r => getCol(r,'Email Type') === 'Personal').length;
+
+  const metrics = [
+    { icon:'≡', label:'Total clients', value: data.length, sub: progs + ' programmes' },
+    { icon:'◯', label:'With emissions data', value: withEmissions.length, sub: Math.round(withEmissions.length/data.length*100) + '% of clients' },
+    { icon:'~', label:'Total tCO2e assessed', value: Math.round(totalCo2).toLocaleString(), sub: 'across all programmes' },
+    { icon:'@', label:'Personal emails flagged', value: personalEmails, sub: 'may need updating' },
+  ];
+
+  const grid = document.getElementById('metric-grid');
+  grid.innerHTML = metrics.map(m => `
+    <div class="metric-card">
+      <div class="metric-icon">${m.icon}</div>
+      <div class="metric-label">${m.label}</div>
+      <div class="metric-value">${m.value}</div>
+      <div class="metric-sub">${m.sub}</div>
+    </div>
+  `).join('');
+
+  function countBy(arr, key) {
+    const r = {};
+    arr.forEach(row => { const v = getCol(row,key)||'Unknown'; r[v]=(r[v]||0)+1; });
+    return Object.entries(r).sort((a,b)=>b[1]-a[1]);
+  }
+
+  function makeChart(id, config) {
+    if (chartInstances[id]) chartInstances[id].destroy();
+    chartInstances[id] = new Chart(document.getElementById(id), config);
+  }
+
+  function buildLegend(id, entries, palette) {
+    document.getElementById(id).innerHTML = entries.slice(0,8).map((e,i) =>
+      `<span class="legend-item"><span class="legend-dot" style="background:${palette[i%palette.length]}"></span>${e[0]}</span>`
+    ).join('');
+  }
+
+  const sectorData = countBy(data,'Sector').slice(0,10);
+  buildLegend('leg-sector', sectorData, PALETTE);
+  makeChart('ch-sector',{type:'bar',data:{labels:sectorData.map(s=>s[0].replace(' & ','\n& ')),datasets:[{data:sectorData.map(s=>s[1]),backgroundColor:PALETTE,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:40}},y:{ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.04)'},beginAtZero:true}}}});
+
+  const typeData = countBy(data,'Business Type');
+  buildLegend('leg-type', typeData, PALETTE);
+  makeChart('ch-type',{type:'doughnut',data:{labels:typeData.map(s=>s[0]),datasets:[{data:typeData.map(s=>s[1]),backgroundColor:PALETTE,borderWidth:2,borderColor:'#f7f8f6'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'58%'}});
+
+  const avgMap = {};
+  data.forEach(r => {
+    const s = getCol(r,'Sector')||'Unknown';
+    const v = parseFloat(getCol(r,'Total Emissions (tCO2e)'));
+    if (!isNaN(v) && v > 0) { if (!avgMap[s]) avgMap[s]=[]; avgMap[s].push(v); }
+  });
+  const avgData = Object.entries(avgMap).map(([s,vs])=>[s,vs.reduce((a,b)=>a+b,0)/vs.length]).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  document.getElementById('ch-emiss-count').textContent = withEmissions.length + ' clients with data';
+  makeChart('ch-emissions',{type:'bar',data:{labels:avgData.map(s=>s[0].replace(' & ','\n& ')),datasets:[{data:avgData.map(s=>parseFloat(s[1].toFixed(1))),backgroundColor:LIME,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:40}},y:{ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.04)'},beginAtZero:true}}}});
+
+  const progData = countBy(data,'Programme').slice(0,10);
+  makeChart('ch-prog',{type:'bar',data:{labels:progData.map(s=>s[0].length>22?s[0].slice(0,20)+'…':s[0]),datasets:[{data:progData.map(s=>s[1]),backgroundColor:TEAL,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:40}},y:{ticks:{font:{size:11}},beginAtZero:true}}}});
+
+  const catData = countBy(data,'Report Category');
+  buildLegend('leg-cat', catData, PALETTE);
+  makeChart('ch-cat',{type:'bar',data:{labels:catData.map(s=>s[0]),datasets:[{data:catData.map(s=>s[1]),backgroundColor:PALETTE,borderWidth:0}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11}},beginAtZero:true},y:{ticks:{font:{size:11}}}}}});
+
+  const countryData = countBy(data,'Country');
+  buildLegend('leg-country', countryData, PALETTE);
+  makeChart('ch-country',{type:'bar',data:{labels:countryData.map(s=>s[0]),datasets:[{data:countryData.map(s=>s[1]),backgroundColor:[TEAL,LIME,'#1D9E75','#888'],borderWidth:0}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11}},beginAtZero:true},y:{ticks:{font:{size:11}}}}}});
+}
+
+function populateFilters() {
+  function fillSelect(id, key) {
+    const sel = document.getElementById(id);
+    const vals = [...new Set(allData.map(r=>getCol(r,key)).filter(Boolean))].sort();
+    sel.innerHTML = `<option value="">All ${key.toLowerCase()}s</option>` + vals.map(v=>`<option value="${v}">${v}</option>`).join('');
+  }
+  fillSelect('filter-sector','Sector');
+  fillSelect('filter-prog','Programme');
+  fillSelect('filter-type','Business Type');
+}
+
+function filterTable() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const sector = document.getElementById('filter-sector').value;
+  const prog = document.getElementById('filter-prog').value;
+  const type = document.getElementById('filter-type').value;
+  filteredData = allData.filter(r => {
+    const text = Object.values(r).join(' ').toLowerCase();
+    return (!q || text.includes(q))
+      && (!sector || getCol(r,'Sector') === sector)
+      && (!prog || getCol(r,'Programme') === prog)
+      && (!type || getCol(r,'Business Type') === type);
+  });
+  renderClientTable(filteredData);
+}
+
+function emailBadge(type) {
+  if (type === 'Personal') return '<span class="badge badge-amber">Personal</span>';
+  if (type === 'Missing') return '<span class="badge badge-red">Missing</span>';
+  return '<span class="badge badge-teal">Business</span>';
+}
+
+function renderClientTable(data) {
+  const tbody = document.getElementById('clients-tbody');
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text-muted);">No records match your filters</td></tr>';
+    document.getElementById('table-footer').textContent = '0 records';
+    return;
+  }
+  tbody.innerHTML = data.slice(0,500).map(r => {
+    const em = getCol(r,'Total Emissions (tCO2e)');
+    return `<tr>
+      <td style="font-weight:500;max-width:160px;" title="${getCol(r,'Client Name / Organisation')}">${getCol(r,'Client Name / Organisation')||'—'}</td>
+      <td><span class="badge badge-teal">${getCol(r,'Sector')||'—'}</span></td>
+      <td style="max-width:120px;font-size:12px;color:var(--text-secondary);">${getCol(r,'Business Type')||'—'}</td>
+      <td><span class="badge badge-lime">${getCol(r,'Country')||'—'}</span></td>
+      <td style="font-size:12px;color:var(--text-secondary);max-width:130px;" title="${getCol(r,'Programme')}">${(getCol(r,'Programme')||'').slice(0,20)||'—'}</td>
+      <td style="font-size:12px;color:var(--text-secondary);">${getCol(r,'Report Category')||'—'}</td>
+      <td style="font-weight:500;color:${em?TEAL:'var(--text-muted)'};">${em ? parseFloat(em).toLocaleString(undefined,{maximumFractionDigits:1}) : '—'}</td>
+      <td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;" title="${getCol(r,'Contact Email')}">${getCol(r,'Contact Email')||'—'}</td>
+      <td>${emailBadge(getCol(r,'Email Type'))}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('table-footer').textContent = data.length + ' records' + (data.length > 500 ? ' (showing first 500)' : '');
+}
+
+function buildDataContext() {
+  const withEm = kbData.filter(r => parseFloat(getCol(r,'Total Emissions (tCO2e)')) > 0);
+  const totalCo2 = withEm.reduce((s,r)=>s+parseFloat(getCol(r,'Total Emissions (tCO2e)')),0);
+  const avgBySector = {};
+  kbData.forEach(r=>{
+    const s=getCol(r,'Sector')||'Unknown';
+    const v=parseFloat(getCol(r,'Total Emissions (tCO2e)'));
+    if(!isNaN(v)&&v>0){if(!avgBySector[s])avgBySector[s]=[];avgBySector[s].push(v);}
+  });
+  const sectorAvgs = Object.entries(avgBySector).map(([s,vs])=>`${s}: avg ${(vs.reduce((a,b)=>a+b,0)/vs.length).toFixed(1)} tCO2e (n=${vs.length})`).join('; ');
+  const clientRows = kbData.map(r=>{
+    const parts=[
+      getCol(r,'Client Name / Organisation'),
+      getCol(r,'Sector'),
+      getCol(r,'Business Type'),
+      getCol(r,'Country'),
+      getCol(r,'Report Category'),
+      getCol(r,'Reporting Period'),
+      getCol(r,'Location'),
+    ];
+    if(getCol(r,'Total Emissions (tCO2e)')) parts.push('total_emissions='+getCol(r,'Total Emissions (tCO2e)'));
+    if(getCol(r,'Scope 1 (tCO2e)')) parts.push('S1='+getCol(r,'Scope 1 (tCO2e)'));
+    if(getCol(r,'Scope 2 (tCO2e)')) parts.push('S2='+getCol(r,'Scope 2 (tCO2e)'));
+    if(getCol(r,'Scope 3 (tCO2e)')) parts.push('S3='+getCol(r,'Scope 3 (tCO2e)'));
+    if(getCol(r,'Contact Email')) parts.push('email='+getCol(r,'Contact Email'));
+    return parts.filter(Boolean).join(' | ');
+  }).join('\n');
+
+  let reportContext = '';
+  if (Object.keys(reportTexts).length > 0) {
+    reportContext = '\n\nREPORT TEXT INDEX (excerpts from actual reports for detailed questions):\n' +
+      Object.entries(reportTexts).slice(0,60).map(([name,text])=>`\n--- ${name} ---\n${text.slice(0,1200)}`).join('\n');
+  }
+
+  return `GREENER EDGE PROJECT DATABASE
+Greener Edge Sustainability — internal intelligence platform
+Total clients: ${kbData.length}
+Clients with emissions data: ${withEm.length}
+Total tCO2e assessed: ${Math.round(totalCo2).toLocaleString()}
+Sector averages: ${sectorAvgs}
+
+CLIENT RECORDS (Name | Sector | Type | Country | Report | Period | Location | Emissions | Scopes | Email):
+${clientRows}${reportContext}`;
+}
+
+async function sendQuestion() {
+  const input = document.getElementById('kb-question');
+  const q = input.value.trim();
+  if (!q) return;
+  if (!kbData.length && !allData.length) {
+    appendMsg('assistant','Please load your BD Engagement Output.xlsx file first using the button in the sidebar or the Load data page.');
+    return;
+  }
+  input.value = '';
+  input.style.height = 'auto';
+  document.getElementById('chat-empty').classList.add('hidden');
+  appendMsg('user', q);
+  const loadId = appendMsg('assistant','Thinking...', true);
+  document.getElementById('send-btn').disabled = true;
+  chatHistory.push({ role:'user', content: q });
+
+  const systemPrompt = `You are an intelligent knowledge base assistant for Greener Edge Sustainability, a Welsh sustainability consultancy. You have access to their complete project database covering all clients, programmes, sectors, and emissions data.
+
+Your role: answer questions about Greener Edge's clients, projects, emissions, sectors, and findings. Be specific — cite client names, figures, and sectors where relevant. When asked for findings or insights, synthesise patterns across the data. Be direct and concise. This is a senior internal tool used by the Data and Carbon Solutions team.
+
+Formatting: use ## headings only when the response has multiple distinct sections. Use bullet points (- ) for lists. Use **bold** for key figures and client names. For short answers a paragraph is enough. Never open with preamble like 'Based on the data provided' — just answer directly.
+
+${buildDataContext()}`;
+
+  const messages = chatHistory.slice(-8).map(m => ({ role:m.role, content:m.content }));
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ model:'claude-haiku-4-5-20251001',, max_tokens:1200, system:systemPrompt, messages })
+    });
+    const data = await res.json();
+    const answer = data.content?.[0]?.text || 'No response received.';
+    chatHistory.push({ role:'assistant', content: answer });
+    updateMsg(loadId, answer);
+  } catch(e) {
+    updateMsg(loadId, 'Error connecting to API. Check your internet connection and try again.');
+  }
+  document.getElementById('send-btn').disabled = false;
+}
+
+function handleKbKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendQuestion(); }
+}
+
+function useSuggestion(btn) {
+  document.getElementById('kb-question').value = btn.textContent;
+  sendQuestion();
+}
+
+let _msgId = 0;
+function appendMsg(role, text, loading=false) {
+  const id = 'msg-' + (++_msgId);
+  const hist = document.getElementById('chat-messages');
+  const time = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.id = id;
+  div.innerHTML = `<div class="msg-bubble${loading?' loading':''}">${esc(text)}</div><div class="msg-time">${time}</div>`;
+  hist.appendChild(div);
+  hist.scrollTop = hist.scrollHeight;
+  return id;
+}
+
+function updateMsg(id, text) {
+  const el = document.getElementById(id);
+  if (el) {
+    const b = el.querySelector('.msg-bubble');
+    b.classList.remove('loading');
+    b.innerHTML = renderMarkdown(text);
+  }
+  document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+}
+
+function esc(t) {
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderMarkdown(text) {
+  let t = String(text);
+
+  // Escape HTML first
+  t = t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  // Headers: ## and ###
+  t = t.replace(/^### (.+)$/gm, '<h4 style="font-size:13px;font-weight:600;color:var(--teal);margin:14px 0 4px;">$1</h4>');
+  t = t.replace(/^## (.+)$/gm, '<h3 style="font-size:14px;font-weight:600;color:var(--teal);margin:16px 0 6px;border-bottom:1px solid var(--border);padding-bottom:4px;">$1</h3>');
+  t = t.replace(/^# (.+)$/gm, '<h2 style="font-size:15px;font-weight:600;color:var(--teal);margin:16px 0 8px;">$1</h2>');
+
+  // Bold
+  t = t.replace(/\*\*(.+?)\*\*/g, '<strong style="font-weight:600;color:var(--text-primary);">$1</strong>');
+
+  // Italic
+  t = t.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  // Bullet points: lines starting with - or *
+  t = t.replace(/^[\-\*] (.+)$/gm, '<li style="margin:3px 0 3px 16px;list-style:disc;">$1</li>');
+
+  // Numbered lists
+  t = t.replace(/^\d+\. (.+)$/gm, '<li style="margin:3px 0 3px 16px;list-style:decimal;">$1</li>');
+
+  // Wrap consecutive <li> in <ul>
+  t = t.replace(/(<li[^>]*>.*<\/li>\n?)+/g, m => `<ul style="margin:6px 0;padding:0;">${m}</ul>`);
+
+  // Horizontal rule
+  t = t.replace(/^---+$/gm, '<hr style="border:none;border-top:1px solid var(--border);margin:12px 0;">');
+
+  // Inline code
+  t = t.replace(/`([^`]+)`/g, '<code style="background:var(--off-white);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:12px;font-family:monospace;">$1</code>');
+
+  // Paragraphs: double newlines
+  t = t.replace(/\n\n+/g, '</p><p style="margin:8px 0;">');
+
+  // Single newlines not inside block elements
+  t = t.replace(/\n/g, '<br>');
+
+  // Wrap in paragraph
+  t = '<p style="margin:0;">' + t + '</p>';
+
+  // Clean up empty paragraphs
+  t = t.replace(/<p[^>]*><\/p>/g, '');
+  t = t.replace(/<p[^>]*><br><\/p>/g, '');
+
+  return t;
+}
+</script>
+</body>
+</html>
