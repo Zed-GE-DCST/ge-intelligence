@@ -1189,7 +1189,7 @@ let API_KEY = '';
 function submitApiKey() {
   const input = document.getElementById('api-key-input');
   const key = input.value.trim();
-  if (!key.startsWith('sk-ant-')) {
+  if (!key.startsWith('sk-')) {
     document.getElementById('modal-error').style.display = 'block';
     return;
   }
@@ -1509,7 +1509,7 @@ ${buildDataContext()}`;
         'anthropic-version': '2023-06-01',
         'anthropic-dangerous-direct-browser-access': 'true'
       },
-      body: JSON.stringify({ model:'claude-haiku-4-5-20251001',, max_tokens:1200, system:systemPrompt, messages })
+      body: JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens: 1000, system:systemPrompt, messages })
     });
     const data = await res.json();
     const answer = data.content?.[0]?.text || 'No response received.';
