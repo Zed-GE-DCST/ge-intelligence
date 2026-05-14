@@ -754,6 +754,44 @@
     background: var(--off-white);
   }
 
+  /* ── Source badges ── */
+  .source-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    letter-spacing: 0.3px;
+  }
+  .source-badge.internal {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+  }
+  .source-badge.external {
+    background: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #bbdefb;
+  }
+  .source-badge.mixed {
+    background: #fff8e1;
+    color: #e65100;
+    border: 1px solid #ffe0b2;
+  }
+  .source-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .source-badge.internal::before { background: #2e7d32; }
+  .source-badge.external::before { background: #1565c0; }
+  .source-badge.mixed::before { background: #e65100; }
+
   /* ── Scrollbar ── */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -1494,7 +1532,14 @@ async function sendQuestion() {
 
 Your role: answer questions about Greener Edge's clients, projects, emissions, sectors, and findings. Be specific — cite client names, figures, and sectors where relevant. When asked for findings or insights, synthesise patterns across the data. Be direct and concise. This is a senior internal tool used by the Data and Carbon Solutions team.
 
-Formatting: use ## headings only when the response has multiple distinct sections. Use bullet points (- ) for lists. Use **bold** for key figures and client names. For short answers a paragraph is enough. Never open with preamble like 'Based on the data provided' — just answer directly.
+SOURCE DECLARATION — mandatory. Every response must begin with exactly one of these tags on its own line before any other text:
+[SOURCE:internal] — answer drawn entirely from the Greener Edge project database and indexed reports
+[SOURCE:external] — answer drawn from general knowledge not present in the provided data
+[SOURCE:mixed] — answer combines GE project data with general knowledge
+
+After the tag, if source is mixed or external, add one italic line stating what came from outside, e.g. *Industry benchmark figures are from general knowledge, not GE project data.*
+
+Formatting: use ## headings only for multi-section responses. Use bullet points for lists. Use **bold** for key figures and client names. No preamble. Answer directly.
 
 ${buildDataContext()}`;
 
@@ -1544,12 +1589,32 @@ function appendMsg(role, text, loading=false) {
   return id;
 }
 
+function parseSourceTag(text) {
+  const match = text.match(/^\[SOURCE:(internal|external|mixed)\]/m);
+  if (!match) return { source: null, body: text };
+  const source = match[1];
+  const body = text.replace(/^\[SOURCE:(internal|external|mixed)\]
+?/, '').trim();
+  return { source, body };
+}
+
+function sourceBadgeHtml(source) {
+  if (!source) return '';
+  const labels = {
+    internal: 'From GE project data',
+    external: 'From general knowledge',
+    mixed: 'GE data + general knowledge'
+  };
+  return `<div class="source-badge ${source}">${labels[source]}</div>`;
+}
+
 function updateMsg(id, text) {
   const el = document.getElementById(id);
   if (el) {
     const b = el.querySelector('.msg-bubble');
     b.classList.remove('loading');
-    b.innerHTML = renderMarkdown(text);
+    const { source, body } = parseSourceTag(text);
+    b.innerHTML = sourceBadgeHtml(source) + renderMarkdown(body);
   }
   document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
 }
