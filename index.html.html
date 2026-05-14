@@ -760,6 +760,67 @@
   ::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
+  /* ── API key modal ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,42,39,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.hidden { display: none; }
+  .modal-box {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 36px 40px;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0,42,39,0.25);
+  }
+  .modal-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .modal-logo-text { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--teal); }
+  .modal-logo-sub { font-size: 10px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--lime-dark); }
+  .modal-title { font-size: 16px; font-weight: 500; color: var(--text-primary); margin-bottom: 6px; }
+  .modal-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.5; }
+  .modal-label { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; display: block; }
+  .modal-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    outline: none;
+    letter-spacing: 0.5px;
+  }
+  .modal-input:focus { border-color: var(--teal); }
+  .modal-btn {
+    width: 100%;
+    background: var(--teal);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .modal-btn:hover { background: var(--teal-dark); }
+  .modal-error { font-size: 12px; color: var(--red); margin-top: 8px; display: none; }
+  .modal-note { font-size: 11px; color: var(--text-muted); margin-top: 14px; line-height: 1.5; text-align: center; }
+
   /* ── Utility ── */
   .hidden { display: none !important; }
   .flex { display: flex; }
@@ -1097,7 +1158,56 @@
   </main>
 </div>
 
+<!-- API Key Modal -->
+<div class="modal-overlay" id="api-modal">
+  <div class="modal-box">
+    <div class="modal-logo">
+      <svg width="32" height="32" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 5 C20 5, 5 30, 5 60 C5 90, 25 115, 50 115 C75 115, 95 90, 95 60 C95 30, 80 5, 50 5Z" fill="#85BE00" opacity="0.9"/>
+        <path d="M50 115 L50 30" stroke="rgba(0,84,79,0.6)" stroke-width="4" stroke-linecap="round"/>
+        <path d="M50 70 L30 50" stroke="rgba(0,84,79,0.6)" stroke-width="3" stroke-linecap="round"/>
+        <path d="M50 85 L72 62" stroke="rgba(0,84,79,0.6)" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div class="modal-logo-text">Greener Edge</div>
+        <div class="modal-logo-sub">Intelligence Platform</div>
+      </div>
+    </div>
+    <div class="modal-title">Enter your API key to continue</div>
+    <div class="modal-sub">This platform uses the Anthropic API for the knowledge base. Your key is stored only in your browser session and never sent anywhere other than Anthropic.</div>
+    <label class="modal-label" for="api-key-input">Anthropic API key</label>
+    <input type="password" id="api-key-input" class="modal-input" placeholder="sk-ant-..." onkeydown="if(event.key==='Enter')submitApiKey()">
+    <button class="modal-btn" onclick="submitApiKey()">Access platform</button>
+    <div class="modal-error" id="modal-error">Please enter a valid API key starting with sk-ant-</div>
+    <div class="modal-note">For access, contact the Data &amp; Carbon Solutions team.<br>Keys are available from console.anthropic.com</div>
+  </div>
+</div>
+
 <script>
+let API_KEY = '';
+
+function submitApiKey() {
+  const input = document.getElementById('api-key-input');
+  const key = input.value.trim();
+  if (!key.startsWith('sk-ant-')) {
+    document.getElementById('modal-error').style.display = 'block';
+    return;
+  }
+  API_KEY = key;
+  sessionStorage.setItem('ge_api_key', key);
+  document.getElementById('api-modal').classList.add('hidden');
+}
+
+function checkApiKey() {
+  const stored = sessionStorage.getItem('ge_api_key');
+  if (stored && stored.startsWith('sk-ant-')) {
+    API_KEY = stored;
+    document.getElementById('api-modal').classList.add('hidden');
+  }
+}
+
+checkApiKey();
+
 let allData = [];
 let filteredData = [];
 let kbData = [];
@@ -1393,8 +1503,13 @@ ${buildDataContext()}`;
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method:'POST',
-      headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify({ model:'claude-haiku-4-5-20251001',, max_tokens:1200, system:systemPrompt, messages })
+      headers:{
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1200, system:systemPrompt, messages })
     });
     const data = await res.json();
     const answer = data.content?.[0]?.text || 'No response received.';
