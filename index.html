@@ -1214,9 +1214,9 @@
     <div class="modal-title">Enter your API key to continue</div>
     <div class="modal-sub">This platform uses the Anthropic API for the knowledge base. Your key is stored only in your browser session and never sent anywhere other than Anthropic.</div>
     <label class="modal-label" for="api-key-input">Anthropic API key</label>
-    <input type="password" id="api-key-input" class="modal-input" placeholder="sk-ant-..." onkeydown="if(event.key==='Enter')submitApiKey()">
+    <input type="password" id="api-key-input" class="modal-input" placeholder="sk-..." onkeydown="if(event.key==='Enter')submitApiKey()">
     <button class="modal-btn" onclick="submitApiKey()">Access platform</button>
-    <div class="modal-error" id="modal-error">Please enter a valid API key starting with sk-ant-</div>
+    <div class="modal-error" id="modal-error">Please enter a valid Anthropic API key</div>
     <div class="modal-note">For access, contact the Data &amp; Carbon Solutions team.<br>Keys are available from console.anthropic.com</div>
   </div>
 </div>
@@ -1238,7 +1238,7 @@ function submitApiKey() {
 
 function checkApiKey() {
   const stored = sessionStorage.getItem('ge_api_key');
-  if (stored && stored.startsWith('sk-ant-')) {
+  if (stored && stored.startsWith('sk-')) {
     API_KEY = stored;
     document.getElementById('api-modal').classList.add('hidden');
   }
@@ -1593,8 +1593,7 @@ function parseSourceTag(text) {
   const match = text.match(/^\[SOURCE:(internal|external|mixed)\]/m);
   if (!match) return { source: null, body: text };
   const source = match[1];
-  const body = text.replace(/^\[SOURCE:(internal|external|mixed)\]
-?/, '').trim();
+  const body = text.replace(/^\[SOURCE:(internal|external|mixed)\][\n]?/, '').trim();
   return { source, body };
 }
 
