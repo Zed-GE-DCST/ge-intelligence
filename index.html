@@ -754,6 +754,30 @@
     background: var(--off-white);
   }
 
+  /* ── Response ratings ── */
+  .msg-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    padding-left: 4px;
+  }
+  .rate-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.15s;
+    line-height: 1;
+  }
+  .rate-btn:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-light); }
+  .rate-btn.rated-up { border-color: #2e7d32; color: #2e7d32; background: #e8f5e9; }
+  .rate-btn.rated-down { border-color: var(--red); color: var(--red); background: var(--red-light); }
+  .rate-label { font-size: 11px; color: var(--text-muted); }
+
   /* ── Source badges ── */
   .source-badge {
     display: inline-flex;
@@ -1530,7 +1554,9 @@ async function sendQuestion() {
 
   const systemPrompt = `You are an intelligent knowledge base assistant for Greener Edge Sustainability, a Welsh sustainability consultancy. You have access to their complete project database covering all clients, programmes, sectors, and emissions data.
 
-Your role: answer questions about Greener Edge's clients, projects, emissions, sectors, and findings. Be specific — cite client names, figures, and sectors where relevant. When asked for findings or insights, synthesise patterns across the data. Be direct and concise. This is a senior internal tool used by the Data and Carbon Solutions team.
+Your role: answer questions about Greener Edge's clients, projects, emissions, sectors, and findings. Be specific — cite client names and figures where relevant. This is an internal tool for senior staff.
+
+Gap handling: if the exact query has no match in GE data, immediately pivot to the closest match that does exist. Lead with what you CAN say from GE data. One sentence maximum to acknowledge the gap, then redirect. Never dwell on what's missing.
 
 SOURCE DECLARATION — mandatory. Every response must begin with exactly one of these tags on its own line before any other text:
 [SOURCE:internal] — answer drawn entirely from the Greener Edge project database and indexed reports
@@ -1583,7 +1609,13 @@ function appendMsg(role, text, loading=false) {
   const div = document.createElement('div');
   div.className = 'msg ' + role;
   div.id = id;
-  div.innerHTML = `<div class="msg-bubble${loading?' loading':''}">${esc(text)}</div><div class="msg-time">${time}</div>`;
+  const actionsHtml = role === 'assistant' && !loading
+    ? `<div class="msg-actions" id="actions-${id}">
+        <button class="rate-btn" onclick="rateMsg('${id}', 'up')" aria-label="Helpful">👍</button>
+        <button class="rate-btn" onclick="rateMsg('${id}', 'down')" aria-label="Not helpful">👎</button>
+        <span class="rate-label" id="rate-label-${id}"></span>
+      </div>` : '';
+  div.innerHTML = `<div class="msg-bubble${loading?' loading':''}">${esc(text)}</div><div class="msg-time">${time}</div>${actionsHtml}`;
   hist.appendChild(div);
   hist.scrollTop = hist.scrollHeight;
   return id;
@@ -1616,6 +1648,43 @@ function updateMsg(id, text) {
     b.innerHTML = sourceBadgeHtml(source) + renderMarkdown(body);
   }
   document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+  // Add rating buttons once message is populated
+  const actionsEl = document.getElementById('actions-' + id);
+  if (!actionsEl && el) {
+    const actions = document.createElement('div');
+    actions.className = 'msg-actions';
+    actions.id = 'actions-' + id;
+    actions.innerHTML = `<button class="rate-btn" onclick="rateMsg('${id}', 'up')" aria-label="Helpful">👍</button><button class="rate-btn" onclick="rateMsg('${id}', 'down')" aria-label="Not helpful">👎</button><span class="rate-label" id="rate-label-${id}"></span>`;
+    el.appendChild(actions);
+  }
+}
+
+function rateMsg(id, rating) {
+  const upBtn = document.querySelector(`#actions-${id} .rate-btn:first-child`);
+  const downBtn = document.querySelector(`#actions-${id} .rate-btn:last-child`);
+  const label = document.getElementById(`rate-label-${id}`);
+  if (!upBtn || !downBtn) return;
+
+  upBtn.classList.remove('rated-up');
+  downBtn.classList.remove('rated-down');
+
+  if (rating === 'up') {
+    upBtn.classList.add('rated-up');
+    if (label) label.textContent = 'Marked as helpful';
+  } else {
+    downBtn.classList.add('rated-down');
+    if (label) label.textContent = 'Marked as unhelpful — noted for improvement';
+  }
+
+  // Store rating in session for future gap analysis
+  const ratings = JSON.parse(sessionStorage.getItem('ge_ratings') || '[]');
+  const bubble = document.querySelector(`#${id} .msg-bubble`);
+  ratings.push({
+    id, rating,
+    timestamp: new Date().toISOString(),
+    preview: bubble ? bubble.innerText.slice(0, 120) : ''
+  });
+  sessionStorage.setItem('ge_ratings', JSON.stringify(ratings));
 }
 
 function esc(t) {
